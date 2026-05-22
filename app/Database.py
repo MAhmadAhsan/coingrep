@@ -1,5 +1,5 @@
 import sqlite3
-from logger import get_logger
+from .logger import get_logger
 
 class Database:
     def __init__(self):

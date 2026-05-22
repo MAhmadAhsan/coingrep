@@ -1,5 +1,5 @@
 import logging
-from config import LOGS_PATH
+from .config import LOGS_PATH
 
 def setup_logging():
     logging.basicConfig(

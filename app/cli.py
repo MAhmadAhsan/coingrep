@@ -1,10 +1,10 @@
 import sys
 import click
 
-from config import DB_PATH
-from CryptoClient import CryptoClient, CryptoClientError
-from Database import Database
-from logger import setup_logging
+from .config import DB_PATH
+from .CryptoClient import CryptoClient, CryptoClientError
+from .Database import Database
+from .logger import setup_logging
 
 client = CryptoClient()
 db = Database()
@@ -33,7 +33,7 @@ def _warn(msg: str) -> None:
 
 def _draw_table(headers: list[str], rows: list[list[str]]) -> None:
     """Print a Unicode box-drawing table from plain lists."""
-    from TerminalTable import TerminalTable
+    from .TerminalTable import TerminalTable
 
     if not rows:
         _warn("No data to display.")

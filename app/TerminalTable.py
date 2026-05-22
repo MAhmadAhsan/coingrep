@@ -1,4 +1,4 @@
-from logger import get_logger
+from .logger import get_logger
 
 class TerminalTable:
     def __init__(self, total_rows, total_columns):
