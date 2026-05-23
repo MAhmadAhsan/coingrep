@@ -1,5 +1,6 @@
 import sys
 import click
+from datetime import datetime
 
 from .config import DB_PATH
 from .CryptoClient import CryptoClient, CryptoClientError
@@ -144,11 +145,13 @@ def cmd_fear_greed():
         entry = client.get_fear_and_greed_index()
     except CryptoClientError as e:
         _error(str(e))
-
+    timestampUnix = int(entry.get("timestamp"))
+    timestamp = datetime.fromtimestamp(timestampUnix)
+    
     rows = [
         ["Value",       entry.get("value", "n/a")],
         ["Rating",      entry.get("value_classification", "n/a")],
-        ["Timestamp",   entry.get("timestamp", "n/a")],
+        ["Timestamp",   timestamp],
     ]
     _draw_table(["metric", "value"], rows)
 
