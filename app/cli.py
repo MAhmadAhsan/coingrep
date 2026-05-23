@@ -8,11 +8,11 @@ from .Database import Database
 from .logger import setup_logging
 
 client = CryptoClient()
-db = Database()
+db = Database(DB_PATH)
 setup_logging()
 
 def _ensure_db():
-    db.init_db(DB_PATH)
+    db.init_db()
 
 
 def _error(msg: str) -> None:
@@ -205,7 +205,7 @@ def wallet_add(label, address, blockchain):
         _ok("Address validated.")
 
     try:
-        db.add_wallet(label, address, DB_PATH)
+        db.add_wallet(label, address)
         _ok(f"Wallet '{label}' added successfully.")
     except ValueError as e:
         _error(str(e))
@@ -231,14 +231,14 @@ def wallet_remove(address, label):
     _ensure_db()
 
     if address:
-        removed = db.remove_wallet_by_address(address, DB_PATH)
+        removed = db.remove_wallet_by_address(address)
         if removed:
             _ok(f"Wallet with address '{address}' removed.")
         else:
             _warn(f"No wallet found with address '{address}'.")
 
     elif label:
-        removed = db.remove_wallet_by_label(label, DB_PATH)
+        removed = db.remove_wallet_by_label(label)
         if removed:
             _ok(f"Wallet '{label}' removed.")
         else:
@@ -249,7 +249,7 @@ def wallet_remove(address, label):
 def wallet_list():
     """List all wallets in your local portfolio."""
     _ensure_db()
-    wallets = db.list_wallets(DB_PATH)
+    wallets = db.list_wallets()
 
     if not wallets:
         _warn("No wallets in portfolio. Use 'wallet add' to add one.")
@@ -278,7 +278,7 @@ def wallet_balances(blockchain):
         python cli.py wallet balances -b ethereum
     """
     _ensure_db()
-    wallets = db.list_wallets(DB_PATH)
+    wallets = db.list_wallets()
 
     if not wallets:
         _warn("No wallets saved. Use 'wallet add' first.")
