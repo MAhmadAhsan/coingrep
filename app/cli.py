@@ -19,18 +19,14 @@ def _error(msg: str) -> None:
     click.echo(click.style(f"  error  {msg}", fg="red"), err=True)
     sys.exit(1)
 
-
 def _ok(msg: str) -> None:
     click.echo(click.style(f"  ok     {msg}", fg="green"))
-
 
 def _info(msg: str) -> None:
     click.echo(click.style(f"  info   {msg}", fg="cyan"))
 
-
 def _warn(msg: str) -> None:
     click.echo(click.style(f"  warn   {msg}", fg="yellow"))
-
 
 def _draw_table(headers: list[str], rows: list[list[str]]) -> None:
     """Print a Unicode box-drawing table from plain lists."""
@@ -263,58 +259,115 @@ def wallet_list():
     _draw_table(headers, rows)
 
 
-@wallet_group.command("balances")
+@wallet_group.command("balance")
+@click.option(
+    "--label", "-l",
+    multiple=True,
+    help="Wallet label(s) saved in your local portfolio.",
+)
 @click.option(
     "--blockchain", "-b",
-    required=True,
-    help="CoinStats connectionId to query (e.g. ethereum, bitcoin).",
+    multiple=True,
+    default=("all",),
+    show_default=True,
+    help="CoinStats connectionId(s) to query (e.g. ethereum, bitcoin). Defaults to 'all'.",
 )
-def wallet_balances(blockchain):
+@click.option(
+    "--address", "-a",
+    multiple=True,
+    help="Raw wallet address(es) to query (not required to be saved).",
+)
+def wallet_balances(label, blockchain, address):
     """
-    Fetch live balances for all saved wallets on a given blockchain.
+    Show token balances for wallets, grouped by address and blockchain.
 
     \b
-    Example:
-        python cli.py wallet balances -b ethereum
+    Sources are combined — provide --label, --address, or both.
+
+    \b
+    Examples:
+        python cli.py wallet balance -l "My ETH" -b ethereum
+        python cli.py wallet balance -a 0xabc... -b ethereum -b polygon
+        python cli.py wallet balance -l "My ETH" -a 0xdef... -b all
     """
     _ensure_db()
-    wallets = db.list_wallets()
 
-    if not wallets:
-        _warn("No wallets saved. Use 'wallet add' first.")
-        return
+    labels_map: dict[str, str] = {}
 
-    addresses = [w["address"] for w in wallets]
-    labels    = {w["address"]: w["label"] for w in wallets}
+    if label:
+        db_wallets = db.get_wallet_by_labels(label)
+        if not db_wallets:
+            _warn(f"No saved wallets matched the given label(s): {', '.join(label)}")
+        for w in db_wallets:
+            labels_map[w["address"]] = w["label"]
 
-    _info(f"Fetching balances for {len(addresses)} wallet(s) on {blockchain}…")
+    for raw_addr in address:
+        if raw_addr not in labels_map:
+            labels_map[raw_addr] = raw_addr[:10] + "…"
 
+    if not labels_map:
+        _error("No addresses to query. Provide --label and/or --address.")
+
+    all_addresses = list(labels_map.keys())
+
+    _info(
+        f"Fetching balances for {len(all_addresses)} address(es) "
+        f"on: {', '.join(blockchain)} …"
+    )
     try:
-        data = client.get_wallet_balances(addresses, blockchain)
+        raw = client.get_wallet_balances(all_addresses, blockchain)
     except CryptoClientError as e:
         _error(str(e))
+        return
 
-    # CoinStats returns a list or a dict with "wallets" key — handle both.
-    results = data if isinstance(data, list) else data.get("wallets", data)
+    results: list[dict] = raw if isinstance(raw, list) else raw.get("wallets", [])
 
     if not results:
         _warn("No balance data returned.")
         return
 
-    headers = ["label", "address", "balance (usd)", "native balance"]
-    rows = []
+    from collections import defaultdict
+    grouped: dict[tuple[str, str], list[dict]] = defaultdict(list)
+
     for entry in results:
         addr  = entry.get("address", "")
-        label = labels.get(addr, addr[:12] + "…")
-        rows.append([
-            label,
-            addr,
-            f"${entry.get('balanceUSD', 0):,.2f}",
-            str(entry.get("balance", "n/a")),
-        ])
+        chain = entry.get("blockchain") or entry.get("connectionId", "unknown")
+        grouped[(addr, chain)].extend(entry.get("balances", []))
 
-    _draw_table(headers, rows)
+    if not grouped:
+        _warn("Response contained no token balances.")
+        return
 
+    for (addr, chain), balances in sorted(grouped.items()):
+        label_display = labels_map.get(addr, addr)
+        click.echo(
+            click.style(
+                f"  ── {label_display}  ({addr})  [{chain}]",
+                fg="cyan", bold=True,
+            )
+        )
+
+        if not balances:
+            _warn("  No tokens found on this chain.")
+            continue
+
+        headers = ["symbol", "name", "amount", "price (usd)", "value (usd)", "chg 24h (%)"]
+        rows = []
+        for token in balances:
+            amount    = token.get("amount", 0)
+            price     = token.get("price", 0)
+            value_usd = amount * price
+            rows.append([
+                token.get("symbol", "").upper(),
+                token.get("name", ""),
+                f"{amount:,.6f}",
+                f"${price:,.4f}",
+                f"${value_usd:,.2f}",
+                f"{token.get('pCh24h', 0):+.2f}%",
+            ])
+
+        rows.sort(key=lambda r: float(r[4].replace("$", "").replace(",", "")), reverse=True)
+        _draw_table(headers, rows)
 
 @wallet_group.command("validate")
 @click.argument("address")
