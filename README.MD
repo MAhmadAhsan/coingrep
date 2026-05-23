@@ -1,259 +1,372 @@
-# COINGREP
+# CoinGrep 🪙
 
-A command-line crypto portfolio tracker that aggregates live market data, wallet balances, and global market statistics into a single terminal interface. Built with Python and Click, COINGREP connects to CoinGecko and CoinStats APIs to deliver real-time information without requiring a graphical interface or a web browser.
+A fast, terminal-based cryptocurrency market and portfolio tracker built with Python.
 
----
-
-## Table of Contents
-
-- [COINGREP](#coingrep)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Features](#features)
-  - [Project Structure](#project-structure)
-  - [Requirements](#requirements)
-  - [Installation](#installation)
-  - [Configuration](#configuration)
-  - [Usage](#usage)
-    - [Market Commands](#market-commands)
-    - [Wallet Commands](#wallet-commands)
-  - [Command Reference](#command-reference)
-  - [Environment Variables](#environment-variables)
-  - [Notes and Limitations](#notes-and-limitations)
+CoinGrep allows users to fetch real-time cryptocurrency market data, monitor global trends, track the Fear & Greed Index, and manage local wallet portfolios directly from the command line.
 
 ---
 
-## Overview
+# ✨ Features
 
-COINGREP is a terminal-first tool designed for users who prefer working in the command line and want quick access to cryptocurrency data without navigating dashboards or browser tabs. It stores wallet addresses locally in a SQLite database, fetches live prices and balances on demand, and renders all output as formatted tables directly in the terminal.
-
-The tool is intentionally stateless at runtime — no background processes, no daemons, no scheduled polling. Every command makes a direct API call and returns immediately.
-
----
-
-## Features
-
-- Live price lookup for any coin by CoinGecko ID, including market cap, 24-hour volume, and percentage change
-- Trending coins list pulled directly from CoinGecko's daily trending index
-- Global crypto market overview covering total market cap, volume, BTC and ETH dominance, and active markets
-- Crypto Fear and Greed Index from the Alternative.me API
-- Blockchain network listing from CoinStats
-- Local wallet portfolio management with add, remove, and list operations
-- Live wallet balance fetching across any CoinStats-supported blockchain
-- Address validation against a specific blockchain before saving
-- All output rendered as Unicode box-drawing tables in the terminal
+- Live cryptocurrency prices
+- Market cap and trading volume data
+- Trending coins
+- Global crypto market statistics
+- Fear & Greed Index
+- Local wallet portfolio management
+- Blockchain address validation
+- SQLite-based local storage
+- Multi-wallet balance checking
 
 ---
 
-## Project Structure
+# Requirements
 
-```
-COINGREP/
-    app/
-        cli.py            Entry point and all Click command definitions
-        config.py         Configuration values, including DB_PATH
-        CryptoClient.py   API client wrapping CoinGecko and CoinStats
-        Database.py       SQLite wallet persistence layer
-        logger.py         Logging setup
-        TerminalTable.py  Unicode table renderer for terminal output
-    .env                  Environment variables (API keys, not committed)
-    .gitignore
-    pyproject.toml
-    README.md
-```
+Before running CoinGrep, install the following dependencies on your machine.
 
 ---
 
-## Requirements
+## 1. Python 3.9 or Higher
 
-- Python 3.10 or higher
-- pip
-
-The following third-party packages are installed automatically:
-
-- `click` — CLI framework
-- `requests` — HTTP client for API calls
-- `python-dotenv` — loads environment variables from `.env`
-
----
-
-## Installation
-
-Clone the repository and install the package. It is recommended to use a virtual environment.
+Check if Python is installed:
 
 ```bash
-git clone https://github.com/your-username/coingrep.git
+python --version
+```
+
+or:
+
+```bash
+python3 --version
+```
+
+If Python is not installed:
+
+### Linux (Ubuntu/Debian)
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-venv
+```
+
+### Arch Linux
+
+```bash
+sudo pacman -S python
+```
+
+### Fedora
+
+```bash
+sudo dnf install python3
+```
+
+### macOS
+
+Install using Homebrew:
+
+```bash
+brew install python
+```
+
+### Windows
+
+Download and install Python from the official installer.
+
+IMPORTANT:
+During installation, enable:
+
+```text
+Add Python to PATH
+```
+
+---
+
+## 2. Git
+
+Git is required to clone the repository.
+
+Check installation:
+
+```bash
+git --version
+```
+
+If Git is not installed:
+
+### Linux
+
+```bash
+sudo apt install git
+```
+
+### macOS
+
+```bash
+brew install git
+```
+
+### Windows
+
+Install Git for Windows.
+
+---
+
+# 🔑 API Key Requirement
+
+CoinGrep uses the CoinStats API for:
+
+- Wallet balance tracking
+- Blockchain validation
+
+You must create a free CoinStats API key before using wallet-related commands.
+
+---
+
+# 🚀 How to Run the Project
+
+The following instructions assume a completely fresh machine.
+
+---
+
+## Step 1 — Clone the Repository
+
+```bash
+git clone https://github.com/MAhmadAhsan/coingrep.git
 cd coingrep
-python -m venv .venv
-source .venv/bin/activate        # On Windows: .venv\Scripts\activate
+```
+
+---
+
+## Step 2 — Create a Virtual Environment
+
+### Linux/macOS
+
+```bash
+python3 -m venv venv
+```
+
+### Windows
+
+```cmd
+python -m venv venv
+```
+
+---
+
+## Step 3 — Activate the Virtual Environment
+
+### Linux/macOS
+
+```bash
+source venv/bin/activate
+```
+
+### Windows (CMD)
+
+```cmd
+venv\Scripts\activate
+```
+
+### Windows (PowerShell)
+
+```powershell
+venv\Scripts\Activate.ps1
+```
+
+After activation, you should see:
+
+```text
+(venv)
+```
+
+at the beginning of your terminal prompt.
+
+---
+
+## Step 4 — Upgrade pip
+
+```bash
+pip install --upgrade pip
+```
+
+---
+
+## Step 5 — Install the Project
+
+```bash
 pip install .
 ```
 
-After installation, the `coingrep` command becomes available in your environment.
-
-## Configuration
-
-COINGREP reads API keys from a `.env` file in the project root. Create the file before running any commands:
-
-```
-COINSTATS_API_KEY=your_coinstats_api_key_here
-```
-
-The local wallet database is created automatically on first use. Its path is defined in `config.py` via the `DB_PATH` variable. By default it writes to a file inside the project directory.
-
----
-
-## Usage
-
-All commands follow this structure:
-
-```
-coingrep [COMMAND] [SUBCOMMAND] [OPTIONS] [ARGUMENTS]
-```
-
-To see available commands:
+For development mode:
 
 ```bash
-coingrep --help
-```
-
-To see help for a specific command:
-
-```bash
-coingrep coins --help
-coingrep wallet --help
+pip install -e .
 ```
 
 ---
 
-### Market Commands
+## Step 6 — Create the Environment File
 
-**Look up one or more coins by CoinGecko ID:**
+Create a file named:
 
-```bash
-coingrep coins bitcoin
-coingrep coins bitcoin ethereum solana cardano
+```text
+.env
 ```
 
-Output includes current price in USD, market cap, 24-hour trading volume, and 24-hour price change percentage.
+inside the project root directory.
 
-**Show today's trending coins:**
+Example structure:
+
+```text
+coingrep/
+│
+├── .env
+├── README.md
+├── pyproject.toml
+└── ...
+```
+
+---
+
+## Step 7 — Add Your CoinStats API Key
+
+Inside `.env`:
+
+```env
+COINSTATS_API_KEY=your_api_key_here
+```
+
+---
+
+## Step 8 — Run the Application
+
+Example commands:
+
+### View trending coins
 
 ```bash
 coingrep trending
 ```
 
-Displays the coins currently trending on CoinGecko, ranked by market cap, with price and 24-hour change.
-
-**Show global market overview:**
+### View global market statistics
 
 ```bash
 coingrep market
 ```
 
-Displays total market cap, total 24-hour volume, number of active cryptocurrencies and markets, BTC dominance, ETH dominance, and market cap change over the past 24 hours.
+### Check coin information
 
-**Show the Fear and Greed Index:**
+```bash
+coingrep coins bitcoin ethereum solana
+```
+
+### View Fear & Greed Index
 
 ```bash
 coingrep fear-greed
 ```
 
-Returns the current index value, its classification (Extreme Fear, Fear, Neutral, Greed, Extreme Greed), and the timestamp of the reading.
+---
 
-**List supported blockchains:**
+# 💼 Wallet Commands
+
+## Add a Wallet
 
 ```bash
-coingrep blockchains
+coingrep wallet add \
+  --label "Main ETH" \
+  --address 0x123...abc \
+  --blockchain ethereum
 ```
-
-Returns all blockchain networks supported by CoinStats, along with their connection IDs. These IDs are used as arguments to wallet commands.
 
 ---
 
-### Wallet Commands
-
-All wallet commands operate under the `wallet` subgroup:
-
-```bash
-coingrep wallet [SUBCOMMAND] [OPTIONS]
-```
-
-**Add a wallet:**
-
-```bash
-coingrep wallet add --label "My ETH Wallet" --address 0xabc123... --blockchain ethereum
-coingrep wallet add --label "Cold Storage BTC" --address 1A1zP1...
-```
-
-The `--blockchain` flag is optional. When provided, COINGREP validates the address against that blockchain via the CoinStats API before saving. If validation fails, the wallet is not saved.
-
-**List saved wallets:**
+## List Saved Wallets
 
 ```bash
 coingrep wallet list
 ```
 
-Displays all wallets stored in the local database, including their ID, label, address, and the date they were added.
+---
 
-**Remove a wallet:**
-
-```bash
-coingrep wallet remove --address 0xabc123...
-coingrep wallet remove --label "My ETH Wallet"
-```
-
-Either the address or the label can be used to identify the wallet to remove.
-
-**Fetch live balances:**
+## Check Wallet Balances
 
 ```bash
 coingrep wallet balances --blockchain ethereum
 ```
 
-Queries the CoinStats API for live balances of all saved wallets on the specified blockchain. Returns USD balance and native token balance for each address.
+---
 
-**Validate an address:**
+## Validate a Wallet Address
 
 ```bash
-coingrep wallet validate 0xabc123... --blockchain ethereum
+coingrep wallet validate 0x123...abc --blockchain ethereum
 ```
 
-Checks whether a given address is valid on the specified blockchain without saving it. Exits with a non-zero status code if the address is invalid, making it usable in shell scripts.
+---
+
+## Remove a Wallet
+
+By label:
+
+```bash
+coingrep wallet remove --label "Main ETH"
+```
+
+By address:
+
+```bash
+coingrep wallet remove --address 0x123...abc
+```
 
 ---
 
-## Command Reference
+# 🗄️ Local Storage
 
-| Command | Description |
-|---|---|
-| `coingrep coins [IDS...]` | Price, market cap, volume, and 24h change for one or more coins |
-| `coingrep trending` | Today's trending coins on CoinGecko |
-| `coingrep market` | Global crypto market overview |
-| `coingrep fear-greed` | Current Fear and Greed Index |
-| `coingrep blockchains` | All blockchains supported by CoinStats |
-| `coingrep wallet add` | Add a wallet to the local portfolio |
-| `coingrep wallet remove` | Remove a wallet by address or label |
-| `coingrep wallet list` | List all saved wallets |
-| `coingrep wallet balances` | Fetch live balances for all saved wallets |
-| `coingrep wallet validate` | Validate a wallet address against a blockchain |
+CoinGrep stores all data locally using SQLite.
 
----
+Default storage locations:
 
-## Environment Variables
+## Linux/macOS
 
-| Variable | Required | Description |
-|---|---|---|
-| `COINSTATS_API_KEY` | Yes | API key for CoinStats wallet and blockchain endpoints |
+```text
+~/.coingrep/db/coingrep.db
+```
 
-Place these in a `.env` file at the project root. The file is loaded automatically at startup via `python-dotenv`. Never commit `.env` to version control — it is included in `.gitignore`.
+Logs:
+
+```text
+~/.coingrep/logs/
+```
 
 ---
 
-## Notes and Limitations
+## Windows
 
-- Coin IDs passed to `coingrep coins` must be CoinGecko slugs (e.g., `bitcoin`, `ethereum`, `solana`), not ticker symbols. To find the correct ID, visit the CoinGecko website or search their coin list.
-- Wallet balance queries depend on CoinStats API availability and may not return data for every blockchain or address format.
-- The local database is a plain SQLite file. It is not encrypted. Do not store sensitive information in wallet labels.
-- COINGREP does not execute any transactions and has no write access to any blockchain. It is a read-only data tool.
-- Rate limits on the free CoinGecko API tier may apply under heavy use. If you encounter HTTP 429 responses, wait before retrying.
+```text
+C:\Users\YourUsername\.coingrep\
+```
+
+---
+
+# 🔒 Privacy
+
+- Wallet addresses are stored locally only
+- No private keys are stored
+- CoinGrep does not upload local wallet databases
+
+---
+
+# 🛠️ Technologies Used
+
+- Python
+- SQLite
+- CoinGecko API
+- CoinStats API
+
+---
+
+# 📄 License
+
+MIT License
