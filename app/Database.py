@@ -21,7 +21,7 @@ class Database:
             "Initializing database..."
         )
 
-        with self._get_connection(self.db_path) as conn:
+        with self._get_connection() as conn:
             conn.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS wallets (
@@ -43,7 +43,7 @@ class Database:
         )
 
         try:
-            with self._get_connection(self.db_path) as conn:
+            with self._get_connection() as conn:
                 conn.execute(
                     """
                     INSERT INTO wallets (label, address)
@@ -79,7 +79,7 @@ class Database:
             )
             raise
     
-    def get_wallet_addresses_by_labels(self, labels):
+    def get_wallet_by_labels(self, labels):
         if not labels:
             self.logger.warning("No labels provided to search.")
             return []
@@ -108,7 +108,7 @@ class Database:
             f"Removing wallet by address: {address}"
         )
 
-        with self._get_connection(self.db_path) as conn:
+        with self._get_connection() as conn:
             cur = conn.execute(
                 "DELETE FROM wallets WHERE address = ?",
                 (address.strip(),),
@@ -131,7 +131,7 @@ class Database:
             f"Removing wallet by label: {label}"
         )
 
-        with self._get_connection(self.db_path) as conn:
+        with self._get_connection() as conn:
             cur = conn.execute(
                 "DELETE FROM wallets WHERE label = ?",
                 (label.strip(),),
@@ -154,7 +154,7 @@ class Database:
             "Fetching wallet list..."
         )
 
-        with self._get_connection(self.db_path) as conn:
+        with self._get_connection() as conn:
             wallets = conn.execute(
                 "SELECT * FROM wallets ORDER BY label"
             ).fetchall()
