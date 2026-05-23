@@ -2,25 +2,26 @@ import sqlite3
 from .logger import get_logger
 
 class Database:
-    def __init__(self):
+    def __init__(self, db_path):
         self.logger = get_logger(__name__)
+        self.db_path = db_path
 
-    def _get_connection(self, db_path):
+    def _get_connection(self):
         self.logger.info(
-            f"Opening database connection: {db_path}"
+            f"Opening database connection: {self.db_path}"
         )
 
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(self.db_path)
         conn.row_factory = sqlite3.Row
 
         return conn
 
-    def init_db(self, db_path):
+    def init_db(self):
         self.logger.info(
             "Initializing database..."
         )
 
-        with self._get_connection(db_path) as conn:
+        with self._get_connection(self.db_path) as conn:
             conn.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS wallets (
@@ -36,13 +37,13 @@ class Database:
             "Database initialized successfully."
         )
 
-    def add_wallet(self, label, address, db_path):
+    def add_wallet(self, label, address):
         self.logger.info(
             f"Adding wallet: label={label}, address={address}"
         )
 
         try:
-            with self._get_connection(db_path) as conn:
+            with self._get_connection(self.db_path) as conn:
                 conn.execute(
                     """
                     INSERT INTO wallets (label, address)
@@ -78,12 +79,12 @@ class Database:
             )
             raise
 
-    def remove_wallet_by_address(self, address, db_path):
+    def remove_wallet_by_address(self, address):
         self.logger.info(
             f"Removing wallet by address: {address}"
         )
 
-        with self._get_connection(db_path) as conn:
+        with self._get_connection(self.db_path) as conn:
             cur = conn.execute(
                 "DELETE FROM wallets WHERE address = ?",
                 (address.strip(),),
@@ -101,12 +102,12 @@ class Database:
 
             return False
 
-    def remove_wallet_by_label(self, label, db_path):
+    def remove_wallet_by_label(self, label):
         self.logger.info(
             f"Removing wallet by label: {label}"
         )
 
-        with self._get_connection(db_path) as conn:
+        with self._get_connection(self.db_path) as conn:
             cur = conn.execute(
                 "DELETE FROM wallets WHERE label = ?",
                 (label.strip(),),
@@ -124,12 +125,12 @@ class Database:
 
             return False
 
-    def list_wallets(self, db_path):
+    def list_wallets(self):
         self.logger.info(
             "Fetching wallet list..."
         )
 
-        with self._get_connection(db_path) as conn:
+        with self._get_connection(self.db_path) as conn:
             wallets = conn.execute(
                 "SELECT * FROM wallets ORDER BY label"
             ).fetchall()
