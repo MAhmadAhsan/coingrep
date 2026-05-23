@@ -78,7 +78,31 @@ class Database:
                 f"Unexpected error while adding wallet: {e}"
             )
             raise
+    
+    def get_wallet_addresses_by_labels(self, labels):
+        if not labels:
+            self.logger.warning("No labels provided to search.")
+            return []
 
+        self.logger.info(f"Fetching addresses for labels: {labels}")
+
+        placeholders = ", ".join(["?"] * len(labels))
+        
+        query = f"SELECT * FROM wallets WHERE label IN ({placeholders})"
+
+        try:
+            with self._get_connection() as conn:
+                cur = conn.execute(query, labels)
+                results = cur.fetchall()
+
+            self.logger.info(f"Found {len(results)} matching wallet(s).")
+            
+            return results
+
+        except Exception as e:
+            self.logger.exception(f"Error fetching wallets by labels: {e}")
+            raise
+    
     def remove_wallet_by_address(self, address):
         self.logger.info(
             f"Removing wallet by address: {address}"
