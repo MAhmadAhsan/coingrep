@@ -102,11 +102,12 @@ class CryptoClient:
         )
         return response.get("data", [{}])[0]
 
-    def get_wallet_balances(self, wallets, blockchain):
+    def get_wallet_balances(self, wallets, blockchains):
+        
+        block_chain_address = [f"{blockchain}:{wallet}" for blockchain in blockchains for wallet in wallets]
+        
         params = {
-            "wallets": ",".join(
-                f"{blockchain}:{wallet}" for wallet in wallets
-            )
+            "wallets": ",".join(block_chain_address)
         }
         return self._get(
             base_url=self._BASE_URL_COINSTATS,
@@ -125,8 +126,6 @@ class CryptoClient:
         if isinstance(response, list):
             return response
         return response.get("data", response)
-    
-    
     
     def is_valid_wallet_address(self, address, blockchain):
         url = f"{self._BASE_URL_COINSTATS}/wallet/status"
