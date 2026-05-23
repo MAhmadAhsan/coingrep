@@ -95,10 +95,13 @@ Install Git for Windows.
 
 CoinGrep uses the CoinStats API for:
 
-- Wallet balance tracking
-- Blockchain validation
+* Wallet balance tracking
+* Blockchain validation
 
-You must create a free CoinStats API key before using wallet-related commands.
+To use wallet-related commands, you need a free API key from CoinStats.
+
+You can create one here:
+[CoinStats OpenAPI Dashboard](https://openapi.coinstats.app/?utm_source=chatgpt.com)
 
 ---
 
