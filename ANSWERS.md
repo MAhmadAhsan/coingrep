@@ -1,107 +1,106 @@
 # Submission Questions
 ## 1. How to run
 
-Before running CoinGrep, install the following dependencies on your machine.
-
----
-
-## 1. Python 3.9 or Higher
-
-Check if Python is installed:
+### Python 3.9 or higher
 
 ```bash
 python --version
 ```
 
-or:
+If not installed:
 
+**Linux (Ubuntu/Debian)**
 ```bash
-python3 --version
+sudo apt update && sudo apt install python3 python3-pip python3-venv
 ```
 
-If Python is not installed:
-
-### Linux (Ubuntu/Debian)
-
-```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-```
-
-### Arch Linux
-
+**Arch Linux**
 ```bash
 sudo pacman -S python
 ```
 
-### Fedora
-
+**Fedora**
 ```bash
 sudo dnf install python3
 ```
 
-### macOS
-
-Install using Homebrew:
-
+**macOS**
 ```bash
 brew install python
 ```
 
-### Windows
+**Windows** — Download from python.org. During installation, enable **Add Python to PATH**.
 
-Download and install Python from the official installer.
-
-IMPORTANT:
-During installation, enable:
-
-```text
-Add Python to PATH
-```
-
----
-
-## 2. Git
-
-Git is required to clone the repository.
-
-Check installation:
+### Git
 
 ```bash
 git --version
 ```
 
-If Git is not installed:
-
-### Linux
-
-```bash
-sudo apt install git
-```
-
-### macOS
-
-```bash
-brew install git
-```
-
-### Windows
-
-Install Git for Windows.
+If not installed: `sudo apt install git` (Linux), `brew install git` (macOS), or download Git for Windows.
 
 ---
 
-# API Key Requirement
+## API Key
 
-CoinGrep uses the CoinStats API for:
+CoinGrep uses the CoinStats API for wallet balance tracking and address validation. Create a free API key at [coinstats.app](https://coinstats.app) before using wallet commands.
 
-* Wallet balance tracking
-* Blockchain validation
+---
 
-To use wallet-related commands, you need a free API key from CoinStats.
+## Installation
 
-You can create one here:
-[CoinStats OpenAPI Dashboard](https://openapi.coinstats.app/?utm_source=chatgpt.com)
+**Clone the repository**
+```bash
+git clone https://github.com/MAhmadAhsan/coingrep.git
+cd coingrep
+```
+
+**Create and activate a virtual environment**
+
+Linux/macOS:
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Windows (CMD):
+```cmd
+python -m venv venv
+venv\Scripts\activate
+```
+
+Windows (PowerShell):
+```powershell
+python -m venv venv
+venv\Scripts\Activate.ps1
+```
+
+**Install dependencies**
+```bash
+pip install --upgrade pip
+pip install .
+```
+
+For development mode:
+```bash
+pip install -e .
+```
+
+**Create the environment file**
+
+Create a `.env` file in the project root:
+```
+coingrep/
+├── .env
+├── README.md
+├── pyproject.toml
+└── ...
+```
+
+Add your CoinStats API key:
+```env
+COINSTATS_API_KEY=your_api_key_here
+```
 
 ---
 

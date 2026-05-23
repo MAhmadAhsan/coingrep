@@ -1,364 +1,227 @@
-# CoinGrep 🪙
+# CoinGrep
 
-A fast, terminal-based cryptocurrency market and portfolio tracker built with Python.
-
-CoinGrep allows users to fetch real-time cryptocurrency market data, monitor global trends, track the Fear & Greed Index, and manage local wallet portfolios directly from the command line.
+A terminal-based cryptocurrency market and portfolio tracker built with Python. Fetch real-time prices, monitor global trends, track the Fear & Greed Index, and manage local wallet portfolios — all from the command line.
 
 ---
 
-# ✨ Features
+## Features
 
-- Live cryptocurrency prices
-- Market cap and trading volume data
-- Trending coins
+- Live cryptocurrency prices with market cap, volume, and 24h change
+- Trending coins from CoinGecko
 - Global crypto market statistics
 - Fear & Greed Index
-- Local wallet portfolio management
+- Local wallet portfolio management (add, remove, list)
 - Blockchain address validation
+- Multi-wallet balance checking across chains
 - SQLite-based local storage
-- Multi-wallet balance checking
 
 ---
 
-# Requirements
+## Requirements
 
-Before running CoinGrep, install the following dependencies on your machine.
-
----
-
-## 1. Python 3.9 or Higher
-
-Check if Python is installed:
+### Python 3.9 or higher
 
 ```bash
 python --version
 ```
 
-or:
+If not installed:
 
+**Linux (Ubuntu/Debian)**
 ```bash
-python3 --version
+sudo apt update && sudo apt install python3 python3-pip python3-venv
 ```
 
-If Python is not installed:
-
-### Linux (Ubuntu/Debian)
-
-```bash
-sudo apt update
-sudo apt install python3 python3-pip python3-venv
-```
-
-### Arch Linux
-
+**Arch Linux**
 ```bash
 sudo pacman -S python
 ```
 
-### Fedora
-
+**Fedora**
 ```bash
 sudo dnf install python3
 ```
 
-### macOS
-
-Install using Homebrew:
-
+**macOS**
 ```bash
 brew install python
 ```
 
-### Windows
+**Windows** — Download from python.org. During installation, enable **Add Python to PATH**.
 
-Download and install Python from the official installer.
-
-IMPORTANT:
-During installation, enable:
-
-```text
-Add Python to PATH
-```
-
----
-
-## 2. Git
-
-Git is required to clone the repository.
-
-Check installation:
+### Git
 
 ```bash
 git --version
 ```
 
-If Git is not installed:
-
-### Linux
-
-```bash
-sudo apt install git
-```
-
-### macOS
-
-```bash
-brew install git
-```
-
-### Windows
-
-Install Git for Windows.
+If not installed: `sudo apt install git` (Linux), `brew install git` (macOS), or download Git for Windows.
 
 ---
 
-# 🔑 API Key Requirement
+## API Key
 
-CoinGrep uses the CoinStats API for:
-
-- Wallet balance tracking
-- Blockchain validation
-
-You must create a free CoinStats API key before using wallet-related commands.
+CoinGrep uses the CoinStats API for wallet balance tracking and address validation. Create a free API key at [coinstats.app](https://coinstats.app) before using wallet commands.
 
 ---
 
-# 🚀 How to Run the Project
+## Installation
 
-The following instructions assume a completely fresh machine.
-
----
-
-## Step 1 — Clone the Repository
-
+**Clone the repository**
 ```bash
 git clone https://github.com/MAhmadAhsan/coingrep.git
 cd coingrep
 ```
 
----
+**Create and activate a virtual environment**
 
-## Step 2 — Create a Virtual Environment
-
-### Linux/macOS
-
+Linux/macOS:
 ```bash
 python3 -m venv venv
-```
-
-### Windows
-
-```cmd
-python -m venv venv
-```
-
----
-
-## Step 3 — Activate the Virtual Environment
-
-### Linux/macOS
-
-```bash
 source venv/bin/activate
 ```
 
-### Windows (CMD)
-
+Windows (CMD):
 ```cmd
+python -m venv venv
 venv\Scripts\activate
 ```
 
-### Windows (PowerShell)
-
+Windows (PowerShell):
 ```powershell
+python -m venv venv
 venv\Scripts\Activate.ps1
 ```
 
-After activation, you should see:
-
-```text
-(venv)
-```
-
-at the beginning of your terminal prompt.
-
----
-
-## Step 4 — Upgrade pip
-
+**Install dependencies**
 ```bash
 pip install --upgrade pip
-```
-
----
-
-## Step 5 — Install the Project
-
-```bash
 pip install .
 ```
 
 For development mode:
-
 ```bash
 pip install -e .
 ```
 
----
+**Create the environment file**
 
-## Step 6 — Create the Environment File
-
-Create a file named:
-
-```text
-.env
+Create a `.env` file in the project root:
 ```
-
-inside the project root directory.
-
-Example structure:
-
-```text
 coingrep/
-│
 ├── .env
 ├── README.md
 ├── pyproject.toml
 └── ...
 ```
 
----
-
-## Step 7 — Add Your CoinStats API Key
-
-Inside `.env`:
-
+Add your CoinStats API key:
 ```env
 COINSTATS_API_KEY=your_api_key_here
 ```
 
 ---
 
-## Step 8 — Run the Application
+## Commands
 
-Example commands:
+### Market Data
 
-### View trending coins
-
-```bash
-coingrep trending
-```
-
-### View global market statistics
-
-```bash
-coingrep market
-```
-
-### Check coin information
-
+**Coin prices** — price, market cap, volume, and 24h change for one or more coins:
 ```bash
 coingrep coins bitcoin ethereum solana
 ```
 
-### View Fear & Greed Index
+**Trending coins** — today's top trending coins on CoinGecko:
+```bash
+coingrep trending
+```
 
+**Global market overview** — active cryptocurrencies, total market cap, BTC/ETH dominance:
+```bash
+coingrep market
+```
+
+**Fear & Greed Index** — current value and classification:
 ```bash
 coingrep fear-greed
 ```
 
----
-
-# 💼 Wallet Commands
-
-## Add a Wallet
-
+**Supported blockchains** — list all blockchains supported by CoinStats:
 ```bash
-coingrep wallet add \
-  --label "Main ETH" \
-  --address 0x123...abc \
-  --blockchain ethereum
+coingrep blockchains
 ```
 
 ---
 
-## List Saved Wallets
+### Wallet Management
 
+**Add a wallet**
+```bash
+coingrep wallet add --label "Main ETH" --address 0x123...abc --blockchain ethereum
+```
+The `--blockchain` flag is optional. When provided, the address is validated against that chain before saving.
+
+**List saved wallets**
 ```bash
 coingrep wallet list
 ```
 
----
+**Check wallet balances**
 
-## Check Wallet Balances
-
+By saved label:
 ```bash
-coingrep wallet balances --blockchain ethereum
+coingrep wallet balance --label "Main ETH" --blockchain ethereum
 ```
 
----
+By raw address:
+```bash
+coingrep wallet balance --address 0x123...abc --blockchain ethereum --blockchain polygon
+```
 
-## Validate a Wallet Address
+Combined, across all chains:
+```bash
+coingrep wallet balance --label "Main ETH" --address 0xdef... --blockchain all
+```
 
+**Validate a wallet address**
 ```bash
 coingrep wallet validate 0x123...abc --blockchain ethereum
 ```
 
----
-
-## Remove a Wallet
+**Remove a wallet**
 
 By label:
-
 ```bash
 coingrep wallet remove --label "Main ETH"
 ```
 
 By address:
-
 ```bash
 coingrep wallet remove --address 0x123...abc
 ```
 
 ---
 
-# 🗄️ Local Storage
+## Local Storage
 
-CoinGrep stores all data locally using SQLite.
+All data is stored locally using SQLite. Nothing is uploaded.
 
-Default storage locations:
+| Platform | Path |
+|----------|------|
+| Linux/macOS | `~/.coingrep/db/coingrep.db` |
+| Windows | `C:\Users\YourUsername\.coingrep\` |
 
-## Linux/macOS
-
-```text
-~/.coingrep/db/coingrep.db
-```
-
-Logs:
-
-```text
-~/.coingrep/logs/
-```
+Logs are written to `~/.coingrep/logs/` on Linux/macOS.
 
 ---
 
-## Windows
+## Privacy
 
-```text
-C:\Users\YourUsername\.coingrep\
-```
+Wallet addresses are stored locally only. No private keys are ever stored or transmitted. CoinGrep does not upload your local database.
 
 ---
 
-# 🔒 Privacy
-
-- Wallet addresses are stored locally only
-- No private keys are stored
-- CoinGrep does not upload local wallet databases
-
----
-
-# 🛠️ Technologies Used
+## Technologies
 
 - Python
 - SQLite
@@ -367,6 +230,6 @@ C:\Users\YourUsername\.coingrep\
 
 ---
 
-# 📄 License
+## License
 
 MIT License
